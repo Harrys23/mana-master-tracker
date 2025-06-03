@@ -28,6 +28,8 @@ const LifeCounter = () => {
   ]);
 
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [selectedPlayerId, setSelectedPlayerId] = useState<number | null>(null);
+  const [isPlayerCountersOpen, setIsPlayerCountersOpen] = useState(false);
   const dragStartY = useRef<number>(0);
   const isDragging = useRef<boolean>(false);
   const dragStartLife = useRef<number>(0);
@@ -96,8 +98,15 @@ const LifeCounter = () => {
     setIsSheetOpen(false);
   };
 
-  const handleTouchStart = (e: React.TouchEvent, playerId: number, side: 'left' | 'right') => {
+  const handleTouchStart = (e: React.TouchEvent, playerId: number, side: 'left' | 'right' | 'center') => {
     e.preventDefault();
+    
+    if (side === 'center') {
+      setSelectedPlayerId(playerId);
+      setIsPlayerCountersOpen(true);
+      return;
+    }
+
     const touch = e.touches[0];
     dragStartY.current = touch.clientY;
     isDragging.current = false;
@@ -108,8 +117,11 @@ const LifeCounter = () => {
     }
   };
 
-  const handleTouchMove = (e: React.TouchEvent, playerId: number, side: 'left' | 'right') => {
+  const handleTouchMove = (e: React.TouchEvent, playerId: number, side: 'left' | 'right' | 'center') => {
     e.preventDefault();
+    
+    if (side === 'center') return;
+
     const touch = e.touches[0];
     const deltaY = dragStartY.current - touch.clientY;
     
@@ -128,8 +140,11 @@ const LifeCounter = () => {
     }
   };
 
-  const handleTouchEnd = (e: React.TouchEvent, playerId: number, side: 'left' | 'right') => {
+  const handleTouchEnd = (e: React.TouchEvent, playerId: number, side: 'left' | 'right' | 'center') => {
     e.preventDefault();
+    
+    if (side === 'center') return;
+
     if (!isDragging.current) {
       // Toque simples
       const change = side === 'right' ? 1 : -1;
@@ -137,6 +152,8 @@ const LifeCounter = () => {
     }
     isDragging.current = false;
   };
+
+  const selectedPlayer = players.find(p => p.id === selectedPlayerId);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-4">
@@ -156,11 +173,11 @@ const LifeCounter = () => {
                 Menu
               </Button>
             </SheetTrigger>
-            <SheetContent side="bottom" className="h-[80vh]">
+            <SheetContent side="bottom" className="h-[60vh]">
               <SheetHeader>
                 <SheetTitle>Configurações do Jogo</SheetTitle>
                 <SheetDescription>
-                  Gerencie jogadores e contadores
+                  Gerencie jogadores
                 </SheetDescription>
               </SheetHeader>
               
@@ -184,82 +201,6 @@ const LifeCounter = () => {
                       Remover Jogador
                     </Button>
                   </div>
-                </div>
-
-                <div className="space-y-2">
-                  <h3 className="text-lg font-semibold">Contadores por Jogador</h3>
-                  {players.map((player) => (
-                    <Card key={player.id} className="p-4">
-                      <h4 className="font-medium mb-3">{player.name}</h4>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Sword className="w-4 h-4" />
-                            <span className="text-sm">Comandante: {player.commanderDamage}</span>
-                          </div>
-                          <div className="flex gap-1">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => updateCounter(player.id, 'commanderDamage', -1)}
-                            >
-                              -
-                            </Button>
-                            <Button
-                              size="sm"
-                              onClick={() => updateCounter(player.id, 'commanderDamage', 1)}
-                            >
-                              +
-                            </Button>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Skull className="w-4 h-4" />
-                            <span className="text-sm">Veneno: {player.poison}</span>
-                          </div>
-                          <div className="flex gap-1">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => updateCounter(player.id, 'poison', -1)}
-                            >
-                              -
-                            </Button>
-                            <Button
-                              size="sm"
-                              onClick={() => updateCounter(player.id, 'poison', 1)}
-                            >
-                              +
-                            </Button>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Zap className="w-4 h-4" />
-                            <span className="text-sm">Energia: {player.energy}</span>
-                          </div>
-                          <div className="flex gap-1">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => updateCounter(player.id, 'energy', -1)}
-                            >
-                              -
-                            </Button>
-                            <Button
-                              size="sm"
-                              onClick={() => updateCounter(player.id, 'energy', 1)}
-                            >
-                              +
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
                 </div>
 
                 <Button 
@@ -286,7 +227,7 @@ const LifeCounter = () => {
                   <div className="bg-black/30 rounded-lg mb-4 relative overflow-hidden">
                     {/* Left side - decrease */}
                     <div 
-                      className="absolute left-0 top-0 w-1/2 h-full z-10 flex items-center justify-center cursor-pointer hover:bg-red-500/20 transition-colors"
+                      className="absolute left-0 top-0 w-1/3 h-full z-10 flex items-center justify-center cursor-pointer hover:bg-red-500/20 transition-colors"
                       onTouchStart={(e) => handleTouchStart(e, player.id, 'left')}
                       onTouchMove={(e) => handleTouchMove(e, player.id, 'left')}
                       onTouchEnd={(e) => handleTouchEnd(e, player.id, 'left')}
@@ -294,9 +235,19 @@ const LifeCounter = () => {
                       <span className="text-red-400 text-2xl font-bold opacity-50">-</span>
                     </div>
                     
+                    {/* Center - counters */}
+                    <div 
+                      className="absolute left-1/3 top-0 w-1/3 h-full z-10 flex items-center justify-center cursor-pointer hover:bg-blue-500/20 transition-colors"
+                      onTouchStart={(e) => handleTouchStart(e, player.id, 'center')}
+                      onTouchMove={(e) => handleTouchMove(e, player.id, 'center')}
+                      onTouchEnd={(e) => handleTouchEnd(e, player.id, 'center')}
+                    >
+                      <Target className="text-blue-400 opacity-50" size={20} />
+                    </div>
+                    
                     {/* Right side - increase */}
                     <div 
-                      className="absolute right-0 top-0 w-1/2 h-full z-10 flex items-center justify-center cursor-pointer hover:bg-green-500/20 transition-colors"
+                      className="absolute right-0 top-0 w-1/3 h-full z-10 flex items-center justify-center cursor-pointer hover:bg-green-500/20 transition-colors"
                       onTouchStart={(e) => handleTouchStart(e, player.id, 'right')}
                       onTouchMove={(e) => handleTouchMove(e, player.id, 'right')}
                       onTouchEnd={(e) => handleTouchEnd(e, player.id, 'right')}
@@ -338,6 +289,90 @@ const LifeCounter = () => {
             </Card>
           ))}
         </div>
+
+        {/* Player Counters Sheet */}
+        <Sheet open={isPlayerCountersOpen} onOpenChange={setIsPlayerCountersOpen}>
+          <SheetContent side="bottom" className="h-[50vh]">
+            <SheetHeader>
+              <SheetTitle>Contadores - {selectedPlayer?.name}</SheetTitle>
+              <SheetDescription>
+                Gerencie os contadores do jogador
+              </SheetDescription>
+            </SheetHeader>
+            
+            {selectedPlayer && (
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-1 gap-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Sword className="w-4 h-4" />
+                      <span className="text-sm">Comandante: {selectedPlayer.commanderDamage}</span>
+                    </div>
+                    <div className="flex gap-1">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => updateCounter(selectedPlayer.id, 'commanderDamage', -1)}
+                      >
+                        -
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => updateCounter(selectedPlayer.id, 'commanderDamage', 1)}
+                      >
+                        +
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Skull className="w-4 h-4" />
+                      <span className="text-sm">Veneno: {selectedPlayer.poison}</span>
+                    </div>
+                    <div className="flex gap-1">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => updateCounter(selectedPlayer.id, 'poison', -1)}
+                      >
+                        -
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => updateCounter(selectedPlayer.id, 'poison', 1)}
+                      >
+                        +
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Zap className="w-4 h-4" />
+                      <span className="text-sm">Energia: {selectedPlayer.energy}</span>
+                    </div>
+                    <div className="flex gap-1">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => updateCounter(selectedPlayer.id, 'energy', -1)}
+                      >
+                        -
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => updateCounter(selectedPlayer.id, 'energy', 1)}
+                      >
+                        +
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </SheetContent>
+        </Sheet>
 
         {/* Game Status */}
         <div className="mt-6 text-center">
