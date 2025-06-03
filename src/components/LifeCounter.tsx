@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -156,20 +155,20 @@ const LifeCounter = () => {
   const selectedPlayer = players.find(p => p.id === selectedPlayerId);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-2">
       <div className="max-w-md mx-auto">
         {/* Header com menu central */}
-        <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold text-white mb-4">Magic Life Counter</h1>
+        <div className="text-center mb-4">
+          <h1 className="text-2xl font-bold text-white mb-3">Magic Life Counter</h1>
           
           <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetTrigger asChild>
               <Button 
                 variant="outline"
-                size="lg"
+                size="sm"
                 className="bg-white/10 border-white/20 text-white hover:bg-white/20"
               >
-                <Settings className="w-5 h-5 mr-2" />
+                <Settings className="w-4 h-4 mr-2" />
                 Menu
               </Button>
             </SheetTrigger>
@@ -216,15 +215,18 @@ const LifeCounter = () => {
         </div>
 
         {/* Players Grid */}
-        <div className={`grid gap-4 ${players.length <= 2 ? 'grid-cols-1' : 'grid-cols-2'}`}>
-          {players.map((player) => (
-            <Card key={player.id} className="bg-white/10 border-white/20 backdrop-blur-sm">
-              <CardContent className="p-4">
+        <div className={`grid gap-2 ${players.length <= 2 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+          {players.map((player, index) => (
+            <Card 
+              key={player.id} 
+              className={`bg-white/10 border-white/20 backdrop-blur-sm ${index === 0 ? 'transform rotate-180' : ''}`}
+            >
+              <CardContent className="p-2">
                 <div className="text-center">
-                  <h3 className="text-lg font-semibold text-white mb-2">{player.name}</h3>
+                  <h3 className="text-sm font-semibold text-white mb-2">{player.name}</h3>
                   
-                  {/* Life Display with Touch Areas */}
-                  <div className="bg-black/30 rounded-lg mb-4 relative overflow-hidden">
+                  {/* Life Display with Touch Areas - Maximized */}
+                  <div className="bg-black/30 rounded-lg mb-2 relative overflow-hidden h-48">
                     {/* Left side - decrease */}
                     <div 
                       className="absolute left-0 top-0 w-1/3 h-full z-10 flex items-center justify-center cursor-pointer hover:bg-red-500/20 transition-colors"
@@ -232,7 +234,7 @@ const LifeCounter = () => {
                       onTouchMove={(e) => handleTouchMove(e, player.id, 'left')}
                       onTouchEnd={(e) => handleTouchEnd(e, player.id, 'left')}
                     >
-                      <span className="text-red-400 text-2xl font-bold opacity-50">-</span>
+                      <span className="text-red-400 text-xl font-bold opacity-50">-</span>
                     </div>
                     
                     {/* Center - counters */}
@@ -242,7 +244,7 @@ const LifeCounter = () => {
                       onTouchMove={(e) => handleTouchMove(e, player.id, 'center')}
                       onTouchEnd={(e) => handleTouchEnd(e, player.id, 'center')}
                     >
-                      <Target className="text-blue-400 opacity-50" size={20} />
+                      <Target className="text-blue-400 opacity-50" size={16} />
                     </div>
                     
                     {/* Right side - increase */}
@@ -252,18 +254,18 @@ const LifeCounter = () => {
                       onTouchMove={(e) => handleTouchMove(e, player.id, 'right')}
                       onTouchEnd={(e) => handleTouchEnd(e, player.id, 'right')}
                     >
-                      <span className="text-green-400 text-2xl font-bold opacity-50">+</span>
+                      <span className="text-green-400 text-xl font-bold opacity-50">+</span>
                     </div>
 
-                    {/* Life number */}
-                    <div className="p-6 relative z-0">
-                      <div className="text-6xl font-bold text-white">{player.life}</div>
+                    {/* Life number - Maximized */}
+                    <div className="h-full flex items-center justify-center relative z-0">
+                      <div className="text-8xl font-bold text-white">{player.life}</div>
                     </div>
                   </div>
 
                   {/* Counters Display */}
                   {(player.commanderDamage > 0 || player.poison > 0 || player.energy > 0) && (
-                    <div className="flex justify-center gap-4 text-sm text-white/80">
+                    <div className="flex justify-center gap-3 text-xs text-white/80">
                       {player.commanderDamage > 0 && (
                         <div className="flex items-center gap-1">
                           <Sword className="w-3 h-3" />
@@ -375,7 +377,7 @@ const LifeCounter = () => {
         </Sheet>
 
         {/* Game Status */}
-        <div className="mt-6 text-center">
+        <div className="mt-4 text-center">
           <div className="text-white/70 text-sm">
             {players.filter(p => p.life > 0).length} jogador(es) vivo(s)
           </div>
