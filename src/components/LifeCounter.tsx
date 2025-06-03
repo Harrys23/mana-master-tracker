@@ -223,7 +223,6 @@ const LifeCounter = () => {
             >
               <CardContent className="p-2">
                 <div className="text-center">
-                  <h3 className="text-sm font-semibold text-white mb-2">{player.name}</h3>
                   
                   {/* Life Display with Touch Areas - Maximized */}
                   <div className="bg-black/30 rounded-lg mb-2 relative overflow-hidden h-48">
@@ -377,16 +376,7 @@ const LifeCounter = () => {
         </Sheet>
 
         {/* Game Status */}
-        <div className="mt-4 text-center">
-          <div className="text-white/70 text-sm">
-            {players.filter(p => p.life > 0).length} jogador(es) vivo(s)
-          </div>
-          {players.some(p => p.life <= 0 || p.poison >= 10) && (
-            <div className="text-red-400 font-bold mt-2">
-              Jogo terminado!
-            </div>
-          )}
-        </div>
+        
       </div>
     </div>
   );
