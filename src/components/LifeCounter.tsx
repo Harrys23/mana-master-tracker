@@ -1,8 +1,8 @@
-
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Settings, Sword, Zap, Skull, Target } from 'lucide-react';
+import { FaUser, FaUsers } from 'react-icons/fa';
 import {
   Sheet,
   SheetContent,
@@ -208,6 +208,17 @@ const LifeCounter = () => {
 
   const selectedPlayer = players.find(p => p.id === selectedPlayerId);
 
+  const getPlayerIcons = (count: number) => {
+    const icons = [];
+    for (let i = 0; i < count; i++) {
+      icons.push(i < 4 ? <FaUser key={i} className="w-3 h-3" /> : null);
+    }
+    if (count > 4) {
+      return <FaUsers className="w-4 h-4" />;
+    }
+    return <div className="flex gap-1">{icons}</div>;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 relative overflow-hidden">
       <div className="h-screen w-full relative">
@@ -315,15 +326,16 @@ const LifeCounter = () => {
               <div className="grid gap-4 py-4">
                 <div className="space-y-3">
                   <h3 className="text-lg font-semibold">Número de Jogadores</h3>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-4 gap-2">
                     {[2, 3, 4, 5, 6, 7, 8].map(count => (
                       <Button 
                         key={count}
                         onClick={() => setPlayerCount(count)}
                         variant={players.length === count ? "default" : "outline"}
-                        className="w-full"
+                        className="h-12 flex flex-col items-center justify-center gap-1 text-xs"
                       >
-                        {count} Jogadores
+                        {getPlayerIcons(count)}
+                        <span>{count}</span>
                       </Button>
                     ))}
                   </div>
