@@ -156,9 +156,11 @@ const LifeCounter = () => {
       case 4:
         return 'grid-cols-2 grid-rows-2 h-screen';
       case 5:
+        return 'grid-cols-2 grid-rows-3 h-screen';
       case 6:
         return 'grid-cols-2 grid-rows-3 h-screen';
       case 7:
+        return 'grid-cols-2 grid-rows-4 h-screen';
       case 8:
         return 'grid-cols-2 grid-rows-4 h-screen';
       default:
@@ -166,7 +168,7 @@ const LifeCounter = () => {
     }
   };
 
-  // Função para determinar rotação do jogador
+  // Função para determinar rotação e posicionamento do jogador
   const getPlayerRotation = (index: number) => {
     const count = players.length;
     
@@ -183,8 +185,22 @@ const LifeCounter = () => {
       return (index === 0 || index === 1) ? 'transform rotate-180' : '';
     }
     
-    if (count >= 5) {
-      return (index % 2 === 0) ? 'transform rotate-180' : '';
+    if (count === 5) {
+      if (index === 0) return 'col-span-2';
+      return (index === 1 || index === 2) ? 'transform rotate-180' : '';
+    }
+    
+    if (count === 6) {
+      return (index === 0 || index === 1 || index === 2) ? 'transform rotate-180' : '';
+    }
+    
+    if (count === 7) {
+      if (index === 0) return 'col-span-2';
+      return (index === 1 || index === 2 || index === 3) ? 'transform rotate-180' : '';
+    }
+    
+    if (count === 8) {
+      return (index === 0 || index === 1 || index === 2 || index === 3) ? 'transform rotate-180' : '';
     }
     
     return '';
