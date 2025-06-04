@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -75,25 +76,16 @@ const LifeCounter = () => {
     setIsSheetOpen(false);
   };
 
-  const addPlayer = () => {
-    if (players.length < 4) {
-      const newPlayer = {
-        id: players.length + 1,
-        name: `Jogador ${players.length + 1}`,
-        life: 20,
-        commanderDamage: 0,
-        poison: 0,
-        energy: 0
-      };
-      setPlayers(prev => [...prev, newPlayer]);
-    }
-    setIsSheetOpen(false);
-  };
-
-  const removePlayer = () => {
-    if (players.length > 2) {
-      setPlayers(prev => prev.slice(0, -1));
-    }
+  const setPlayerCount = (count: number) => {
+    const newPlayers = Array.from({ length: count }, (_, i) => ({
+      id: i + 1,
+      name: `Jogador ${i + 1}`,
+      life: 20,
+      commanderDamage: 0,
+      poison: 0,
+      energy: 0
+    }));
+    setPlayers(newPlayers);
     setIsSheetOpen(false);
   };
 
@@ -152,21 +144,145 @@ const LifeCounter = () => {
     isDragging.current = false;
   };
 
+  // Função para determinar o layout baseado no número de jogadores
+  const getPlayerLayout = () => {
+    const count = players.length;
+    
+    switch (count) {
+      case 2:
+        return 'grid-rows-2 h-screen';
+      case 3:
+        return 'grid-cols-2 grid-rows-2 h-screen';
+      case 4:
+        return 'grid-cols-2 grid-rows-2 h-screen';
+      case 5:
+      case 6:
+        return 'grid-cols-2 grid-rows-3 h-screen';
+      case 7:
+      case 8:
+        return 'grid-cols-2 grid-rows-4 h-screen';
+      default:
+        return 'grid-rows-2 h-screen';
+    }
+  };
+
+  // Função para determinar rotação do jogador
+  const getPlayerRotation = (index: number) => {
+    const count = players.length;
+    
+    if (count === 2) {
+      return index === 0 ? 'transform rotate-180' : '';
+    }
+    
+    if (count === 3) {
+      if (index === 0) return 'col-span-2';
+      return index === 1 ? 'transform rotate-180' : '';
+    }
+    
+    if (count === 4) {
+      return (index === 0 || index === 1) ? 'transform rotate-180' : '';
+    }
+    
+    if (count >= 5) {
+      return (index % 2 === 0) ? 'transform rotate-180' : '';
+    }
+    
+    return '';
+  };
+
   const selectedPlayer = players.find(p => p.id === selectedPlayerId);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-2">
-      <div className="max-w-md mx-auto">
-        {/* Header com menu central */}
-        <div className="text-center mb-4">
-          <h1 className="text-2xl font-bold text-white mb-3">Magic Life Counter</h1>
-          
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 relative overflow-hidden">
+      <div className="h-screen w-full relative">
+        {/* Players Grid - Ocupa toda a tela */}
+        <div className={`grid gap-1 p-1 ${getPlayerLayout()}`}>
+          {players.map((player, index) => (
+            <Card 
+              key={player.id} 
+              className={`bg-white/10 border-white/20 backdrop-blur-sm h-full ${getPlayerRotation(index)}`}
+            >
+              <CardContent className="p-2 h-full">
+                <div className="text-center h-full">
+                  
+                  {/* Life Display with Touch Areas - Maximizado para ocupar toda a altura */}
+                  <div className="bg-black/30 rounded-lg relative overflow-hidden h-full flex flex-col">
+                    {/* Touch Areas */}
+                    <div className="absolute inset-0 z-10 flex">
+                      {/* Left side - decrease */}
+                      <div 
+                        className="w-1/3 h-full flex items-center justify-center cursor-pointer hover:bg-red-500/20 transition-colors"
+                        onTouchStart={(e) => handleTouchStart(e, player.id, 'left')}
+                        onTouchMove={(e) => handleTouchMove(e, player.id, 'left')}
+                        onTouchEnd={(e) => handleTouchEnd(e, player.id, 'left')}
+                      >
+                        <span className="text-red-400 text-xl font-bold opacity-50">-</span>
+                      </div>
+                      
+                      {/* Center - counters */}
+                      <div 
+                        className="w-1/3 h-full flex items-center justify-center cursor-pointer hover:bg-blue-500/20 transition-colors"
+                        onTouchStart={(e) => handleTouchStart(e, player.id, 'center')}
+                        onTouchMove={(e) => handleTouchMove(e, player.id, 'center')}
+                        onTouchEnd={(e) => handleTouchEnd(e, player.id, 'center')}
+                      >
+                        <Target className="text-blue-400 opacity-50" size={16} />
+                      </div>
+                      
+                      {/* Right side - increase */}
+                      <div 
+                        className="w-1/3 h-full flex items-center justify-center cursor-pointer hover:bg-green-500/20 transition-colors"
+                        onTouchStart={(e) => handleTouchStart(e, player.id, 'right')}
+                        onTouchMove={(e) => handleTouchMove(e, player.id, 'right')}
+                        onTouchEnd={(e) => handleTouchEnd(e, player.id, 'right')}
+                      >
+                        <span className="text-green-400 text-xl font-bold opacity-50">+</span>
+                      </div>
+                    </div>
+
+                    {/* Life number - Centralizado e maximizado */}
+                    <div className="flex-1 flex items-center justify-center relative z-0">
+                      <div className="text-8xl md:text-9xl font-bold text-white">{player.life}</div>
+                    </div>
+
+                    {/* Counters Display */}
+                    {(player.commanderDamage > 0 || player.poison > 0 || player.energy > 0) && (
+                      <div className="absolute bottom-2 left-2 right-2 flex justify-center gap-3 text-xs text-white/80 z-20">
+                        {player.commanderDamage > 0 && (
+                          <div className="flex items-center gap-1 bg-black/50 rounded px-2 py-1">
+                            <Sword className="w-3 h-3" />
+                            <span>{player.commanderDamage}</span>
+                          </div>
+                        )}
+                        {player.poison > 0 && (
+                          <div className="flex items-center gap-1 bg-black/50 rounded px-2 py-1">
+                            <Skull className="w-3 h-3" />
+                            <span>{player.poison}</span>
+                          </div>
+                        )}
+                        {player.energy > 0 && (
+                          <div className="flex items-center gap-1 bg-black/50 rounded px-2 py-1">
+                            <Zap className="w-3 h-3" />
+                            <span>{player.energy}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Menu Button - Centralizado na tela */}
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30">
           <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetTrigger asChild>
               <Button 
                 variant="outline"
                 size="sm"
-                className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                className="bg-black/80 border-white/20 text-white hover:bg-black/90 backdrop-blur-sm"
               >
                 <Settings className="w-4 h-4 mr-2" />
                 Menu
@@ -176,119 +292,37 @@ const LifeCounter = () => {
               <SheetHeader>
                 <SheetTitle>Configurações do Jogo</SheetTitle>
                 <SheetDescription>
-                  Gerencie jogadores
+                  Escolha o número de jogadores
                 </SheetDescription>
               </SheetHeader>
               
               <div className="grid gap-4 py-4">
-                <div className="space-y-2">
-                  <h3 className="text-lg font-semibold">Jogadores</h3>
-                  <div className="flex gap-2">
-                    <Button 
-                      onClick={addPlayer}
-                      disabled={players.length >= 4}
-                      className="flex-1"
-                    >
-                      Adicionar Jogador
-                    </Button>
-                    <Button 
-                      onClick={removePlayer}
-                      disabled={players.length <= 2}
-                      variant="outline"
-                      className="flex-1"
-                    >
-                      Remover Jogador
-                    </Button>
+                <div className="space-y-3">
+                  <h3 className="text-lg font-semibold">Número de Jogadores</h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[2, 3, 4, 5, 6, 7, 8].map(count => (
+                      <Button 
+                        key={count}
+                        onClick={() => setPlayerCount(count)}
+                        variant={players.length === count ? "default" : "outline"}
+                        className="w-full"
+                      >
+                        {count} Jogadores
+                      </Button>
+                    ))}
                   </div>
                 </div>
 
                 <Button 
                   onClick={resetGame}
                   variant="destructive"
-                  className="w-full"
+                  className="w-full mt-4"
                 >
                   Reset do Jogo
                 </Button>
               </div>
             </SheetContent>
           </Sheet>
-        </div>
-
-        {/* Players Grid */}
-        <div className={`grid gap-2 ${players.length <= 2 ? 'grid-cols-1' : 'grid-cols-2'}`}>
-          {players.map((player, index) => (
-            <Card 
-              key={player.id} 
-              className={`bg-white/10 border-white/20 backdrop-blur-sm ${index === 0 ? 'transform rotate-180' : ''}`}
-            >
-              <CardContent className="p-2">
-                <div className="text-center">
-                  
-                  {/* Life Display with Touch Areas - Maximized */}
-                  <div className="bg-black/30 rounded-lg mb-2 relative overflow-hidden h-48">
-                    {/* Left side - decrease */}
-                    <div 
-                      className="absolute left-0 top-0 w-1/3 h-full z-10 flex items-center justify-center cursor-pointer hover:bg-red-500/20 transition-colors"
-                      onTouchStart={(e) => handleTouchStart(e, player.id, 'left')}
-                      onTouchMove={(e) => handleTouchMove(e, player.id, 'left')}
-                      onTouchEnd={(e) => handleTouchEnd(e, player.id, 'left')}
-                    >
-                      <span className="text-red-400 text-xl font-bold opacity-50">-</span>
-                    </div>
-                    
-                    {/* Center - counters */}
-                    <div 
-                      className="absolute left-1/3 top-0 w-1/3 h-full z-10 flex items-center justify-center cursor-pointer hover:bg-blue-500/20 transition-colors"
-                      onTouchStart={(e) => handleTouchStart(e, player.id, 'center')}
-                      onTouchMove={(e) => handleTouchMove(e, player.id, 'center')}
-                      onTouchEnd={(e) => handleTouchEnd(e, player.id, 'center')}
-                    >
-                      <Target className="text-blue-400 opacity-50" size={16} />
-                    </div>
-                    
-                    {/* Right side - increase */}
-                    <div 
-                      className="absolute right-0 top-0 w-1/3 h-full z-10 flex items-center justify-center cursor-pointer hover:bg-green-500/20 transition-colors"
-                      onTouchStart={(e) => handleTouchStart(e, player.id, 'right')}
-                      onTouchMove={(e) => handleTouchMove(e, player.id, 'right')}
-                      onTouchEnd={(e) => handleTouchEnd(e, player.id, 'right')}
-                    >
-                      <span className="text-green-400 text-xl font-bold opacity-50">+</span>
-                    </div>
-
-                    {/* Life number - Maximized */}
-                    <div className="h-full flex items-center justify-center relative z-0">
-                      <div className="text-8xl font-bold text-white">{player.life}</div>
-                    </div>
-                  </div>
-
-                  {/* Counters Display */}
-                  {(player.commanderDamage > 0 || player.poison > 0 || player.energy > 0) && (
-                    <div className="flex justify-center gap-3 text-xs text-white/80">
-                      {player.commanderDamage > 0 && (
-                        <div className="flex items-center gap-1">
-                          <Sword className="w-3 h-3" />
-                          <span>{player.commanderDamage}</span>
-                        </div>
-                      )}
-                      {player.poison > 0 && (
-                        <div className="flex items-center gap-1">
-                          <Skull className="w-3 h-3" />
-                          <span>{player.poison}</span>
-                        </div>
-                      )}
-                      {player.energy > 0 && (
-                        <div className="flex items-center gap-1">
-                          <Zap className="w-3 h-3" />
-                          <span>{player.energy}</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
         </div>
 
         {/* Player Counters Sheet */}
@@ -374,9 +408,6 @@ const LifeCounter = () => {
             )}
           </SheetContent>
         </Sheet>
-
-        {/* Game Status */}
-        
       </div>
     </div>
   );
